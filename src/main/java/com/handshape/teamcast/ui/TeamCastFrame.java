@@ -44,31 +44,7 @@ public class TeamCastFrame extends javax.swing.JFrame {
     private ResourceBundle i18n;
 
     private final JTextArea webhookArea = new JTextArea(4, 40);
-    private DocumentListener docListener = new DocumentListener() {
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            fireChange();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            fireChange();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            fireChange();
-        }
-
-        public void fireChange() {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    rerenderPreview();
-                }
-            });
-        }
-    };
+    private DocumentListener docListener;
 
     /**
      * Creates new form TeamCastFrame
@@ -86,6 +62,7 @@ public class TeamCastFrame extends javax.swing.JFrame {
         iconField.getDocument().addDocumentListener(docListener);
         bodyArea.getDocument().addDocumentListener(docListener);
         previewPane.setContentType("text/html");
+        docListener = new MDPreviewUpdateListener();
     }
 
     /**
@@ -285,7 +262,7 @@ public class TeamCastFrame extends javax.swing.JFrame {
         if (!urls.isEmpty()) {
             MessageFormat format = new MessageFormat(i18n.getString("message.confirmPost"));
             if (JOptionPane.showConfirmDialog(this.rootPane,
-                    format.format(new Object[]{(Integer)urls.size()}),
+                    format.format(new Object[]{(Integer) urls.size()}),
                     i18n.getString("title.confirmPost"),
                     JOptionPane.OK_CANCEL_OPTION,
                     JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
@@ -338,10 +315,10 @@ public class TeamCastFrame extends javax.swing.JFrame {
         JsonObject activity = new JsonObject();
         sections.add(activity);
         activity.addProperty("activityTitle", title);
-        if (subtitle != null & !subtitle.trim().isEmpty()) {
+        if (subtitle != null && !subtitle.trim().isEmpty()) {
             activity.addProperty("activitySubtitle", subtitle);
         }
-        if (imageUrl != null & !imageUrl.trim().isEmpty()) {
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
             activity.addProperty("activityImage", imageUrl);
         }
         activity.addProperty("activityText", message);
@@ -396,6 +373,36 @@ public class TeamCastFrame extends javax.swing.JFrame {
         text.addProperty("text", "*" + subtitle + "*\n" + message);
         String toJson = gson.toJson(root);
         return toJson;
+    }
+
+    private class MDPreviewUpdateListener implements DocumentListener {
+
+        public MDPreviewUpdateListener() {
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            fireChange();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            fireChange();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            fireChange();
+        }
+
+        public void fireChange() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    rerenderPreview();
+                }
+            });
+        }
     }
 
 }
